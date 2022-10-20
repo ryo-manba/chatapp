@@ -1,16 +1,12 @@
 import { Module } from '@nestjs/common';
-// import { ChatGateway } from './chat/chat.gateway';
 import { AppController } from './app.controller'
 import { AppService } from './app.service';
-// import { AlertGateway } from './alert/alert.gateway';
-// import { AlertController } from './alert/alert.controller';
-// import { WebsocketService } from './websocket/websocket.service';
-import { EventsModule } from './events/events.module';
+import { ChatModule } from './chat/chat.module';
 
 
 @Module({
-  imports: [EventsModule],
+  imports: [ChatModule],
   // controllers: [AppController],
-  // providers: [ChatGateway, AppService, WebsocketService],
+  // providers: [AppService],
 })
 export class AppModule {}

@@ -15,20 +15,12 @@ import { Server } from 'socket.io';
   },
   namespace: '/chat'
 })
-export class EventsGateway {
+export class ChatGateway {
   @WebSocketServer() server: Server;
 
   @SubscribeMessage('events')
   Echo(@MessageBody() data: any): void {
     console.log(`Get event: ${data}`);
     this.server.emit('eventsClient', data)
-    // return from([1,2,3]).pipe(map(item=> ({ event: 'events', data: item})));
-    // return data
-  }
-
-  @SubscribeMessage('identity')
-  async identity(@MessageBody() data: string): Promise<string> {
-    console.log(`Get idnetity: ${data}`);
-    return data;
   }
 }
