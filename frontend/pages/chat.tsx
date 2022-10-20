@@ -1,57 +1,75 @@
-import { Stack, Button } from "@mui/material";
+import { Stack, Button, TextField } from "@mui/material";
 import { useState, useEffect } from "react";
 import io, { Socket } from "socket.io-client";
+import { css } from "@emotion/react";
 
 type Message = {
   sender: string;
-  room: string;
   message: string;
+  room?: string;
 };
 
-const showList = (list: string[]) => {
-  return list.map((item) => <li>{item}</li>);
+const showMessage = (list: Message[]) => {
+  return list.map((item) => (
+    <li>
+      <strong>{item.sender}: </strong>
+      {item.message}
+    </li>
+  ));
 };
 
 const socket = io("http://localhost:3000/chat");
 const Chat = () => {
   const [text, setText] = useState("");
-  const [textList, setTextList] = useState<string[]>([]);
+  const [user, setUser] = useState("");
+
+  const [messages, setMessage] = useState<Message[]>([]);
+
+  // get user name
+  useEffect(() => {
+    const name = String(window.prompt("ユーザー名を入力してください"));
+    setUser(name);
+  }, []);
 
   // receive a message from the server
   useEffect(() => {
-    socket.on("eventsClient", (data) => {
-      console.log("Get client", data);
-      setTextList((MessageList) => [...MessageList, data]);
+    socket.on("eventsClient", (data: Message) => {
+      console.log("Get client", data.message);
+      setMessage((msgs) => [...msgs, data]);
     });
   }, []);
-
-  // 接続、及び再接続時に発生する
-  socket.on("connect", () => {
-    console.log("Connected");
-  });
-  // 切断時に発生する
-  socket.on("disconnect", () => {
-    console.log("Disconnected");
-  });
 
   // send a message to the server
   const sendMessage = () => {
     console.log("send: message");
-    socket.emit("events", text);
+    const message = { sender: user, message: text, room: "" };
+    socket.emit("events", message);
     setText("");
   };
 
   return (
     <>
       <h1>Chat app</h1>
-      <input value={text} onChange={(e) => setText(e.target.value)} />
-      <button onClick={sendMessage}>メッセージを送信する</button>
-
-      <p>
-        <strong>Talk</strong>
-      </p>
       <hr />
-      <ul>{showList(textList)}</ul>
+      <p>
+        <strong>Name: </strong>
+        {user}
+      </p>
+      <TextField
+        id="standard-basic"
+        label="メッセージを入力してください"
+        variant="standard"
+        size="small"
+        onChange={(e) => setText(e.target.value)}
+        style={{ width: 250 }}
+      />
+      <Button onClick={sendMessage} variant="contained">
+        送信する
+      </Button>
+      <p>
+        <strong>Talk Room</strong>
+      </p>
+      <ul>{showMessage(messages)}</ul>
     </>
   );
 };
