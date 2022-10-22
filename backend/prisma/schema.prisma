@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  name           String
+  email          String    @unique
+  hashedPassword String
+  Message        Message[]
+}
+
+model ChatRoom {
+  id      Int       @id @default(autoincrement())
+  name    String
+  type    Boolean // private or public(DMは別にする?)
+  author  String // 最初は作成者にする
+  message Message[]
+}
+
+model Message {
+  id       Int      @id @default(autoincrement())
+  roomId   Int
+  userId   Int
+  message  String
+  chatRoom ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade) // Roomが消されたらメッセージも削除する
+  user     User     @relation(fields: [userId], references: [id])
+}
