@@ -9,6 +9,12 @@ type Message = {
   room?: string;
 };
 
+type ChatRoom = {
+  name: string;
+  type: boolean;
+  auther: string;
+};
+
 const showMessage = (list: Message[]) => {
   return list.map((item) => (
     <li>
@@ -22,6 +28,7 @@ const socket = io("http://localhost:3000/chat");
 const Chat = () => {
   const [text, setText] = useState("");
   const [user, setUser] = useState("");
+  const [room, setRoom] = useState("");
 
   const [messages, setMessage] = useState<Message[]>([]);
 
@@ -33,9 +40,20 @@ const Chat = () => {
 
   // receive a message from the server
   useEffect(() => {
-    socket.on("eventsClient", (data: Message) => {
+    socket.on("receiveClient", (data: Message) => {
       console.log("Get client", data.message);
       setMessage((msgs) => [...msgs, data]);
+    });
+  }, []);
+
+  useEffect(() => {
+    socket.on("joinedRoom", (room: string) => {
+      // rooms[room] = true
+    });
+  }, []);
+  useEffect(() => {
+    socket.on("leftRoom", (room: string) => {
+      // rooms[room] = false
     });
   }, []);
 
@@ -43,8 +61,19 @@ const Chat = () => {
   const sendMessage = () => {
     console.log("send: message");
     const message = { sender: user, message: text, room: "" };
-    socket.emit("events", message);
+    socket.emit("message", message);
     setText("");
+  };
+
+  const createChatRoom = () => {
+    console.log("[DEBUG] create ChatRoom");
+    const room = {
+      name: "コーヒースタンド",
+      type: true,
+      author: "admin",
+    };
+    socket.emit("createRoom", room);
+    console.log("[DEBUG] finish create ChatRoom");
   };
 
   return (
@@ -65,6 +94,9 @@ const Chat = () => {
       />
       <Button onClick={sendMessage} variant="contained">
         送信する
+      </Button>
+      <Button onClick={createChatRoom} variant="contained">
+        チャットルームを作成する
       </Button>
       <p>
         <strong>Talk Room</strong>
